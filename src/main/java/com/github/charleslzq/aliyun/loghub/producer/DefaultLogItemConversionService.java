@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.TypeDescriptor;
 
-public class DefaultLogItemConversionService implements ConversionService{
+public class DefaultLogItemConversionService implements ConversionService {
     private Gson gson = new Gson();
 
     @Override
@@ -21,7 +21,7 @@ public class DefaultLogItemConversionService implements ConversionService{
     @Override
     public <T> T convert(Object o, Class<T> aClass) {
         if (aClass.equals(LogItem.class)) {
-            return (T)createNewItem(o);
+            return (T) createNewItem(o);
         } else {
             return null;
         }

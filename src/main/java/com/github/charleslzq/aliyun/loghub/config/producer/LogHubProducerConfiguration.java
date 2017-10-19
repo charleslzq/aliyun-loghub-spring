@@ -1,6 +1,9 @@
 package com.github.charleslzq.aliyun.loghub.config.producer;
 
 import com.aliyun.openservices.log.producer.LogProducer;
+import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubProjectBeanPostProcessor;
+import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubStoreBeanPostProcessor;
+import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubTopicBeanPostProcessor;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectConfig;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectProperties;
 import com.github.charleslzq.aliyun.loghub.producer.DefaultLogItemConversionService;
@@ -8,6 +11,7 @@ import com.github.charleslzq.aliyun.loghub.producer.LogHubProducerTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +36,9 @@ public class LogHubProducerConfiguration {
 
     @Autowired
     private LogHubProjectProperties logHubProjectProperties;
+
+    @Autowired
+    protected DefaultListableBeanFactory defaultListableBeanFactory;
 
     private String hostIp = "127.0.0.1";
     private String hostName = "localhost";
@@ -60,5 +67,20 @@ public class LogHubProducerConfiguration {
         );
 
         return new LogHubProducerTemplate(logProducer, source, conversionService, availableProjects);
+    }
+
+    @Bean
+    public LogHubProjectBeanPostProcessor logHubProjectBeanPostProcessor(LogHubProducerTemplate logHubProducerTemplate) {
+        return new LogHubProjectBeanPostProcessor(logHubProducerTemplate, defaultListableBeanFactory);
+    }
+
+    @Bean
+    public LogHubStoreBeanPostProcessor logHubStoreBeanPostProcessor(LogHubProducerTemplate logHubProducerTemplate) {
+        return new LogHubStoreBeanPostProcessor(logHubProducerTemplate, defaultListableBeanFactory);
+    }
+
+    @Bean
+    public LogHubTopicBeanPostProcessor logHubTopicBeanPostProcessor(LogHubProducerTemplate logHubProducerTemplate) {
+        return new LogHubTopicBeanPostProcessor(logHubProducerTemplate, defaultListableBeanFactory);
     }
 }

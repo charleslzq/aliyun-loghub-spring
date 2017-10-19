@@ -1,6 +1,5 @@
 package com.github.charleslzq.aliyun.loghub.config;
 
-import com.github.charleslzq.aliyun.loghub.config.LogHubProjectConfig;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

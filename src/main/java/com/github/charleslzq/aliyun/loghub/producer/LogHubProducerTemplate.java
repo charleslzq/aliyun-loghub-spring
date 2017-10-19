@@ -3,12 +3,13 @@ package com.github.charleslzq.aliyun.loghub.producer;
 import com.aliyun.openservices.log.common.LogItem;
 import com.aliyun.openservices.log.producer.ILogCallback;
 import com.aliyun.openservices.log.producer.LogProducer;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LogHubProducerTemplate {
+public class LogHubProducerTemplate implements DisposableBean {
     /**
      * aliyun log producer, send message to loghub
      */
@@ -48,8 +49,14 @@ public class LogHubProducerTemplate {
         if (availableProjects.contains(project)) {
             logProducer.send(project, store, topic, source,
                     items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()));
+            logProducer.flush();
         } else {
             throw new IllegalArgumentException("Project " + project + " not configured");
         }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        logProducer.close();
     }
 }

@@ -43,4 +43,13 @@ public class LogHubProducerTemplate {
             throw new IllegalArgumentException("Project " + project + " not configured");
         }
     }
+
+    public void send(String project, String store, String topic, List<?> items) {
+        if (availableProjects.contains(project)) {
+            logProducer.send(project, store, topic, source,
+                    items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()));
+        } else {
+            throw new IllegalArgumentException("Project " + project + " not configured");
+        }
+    }
 }

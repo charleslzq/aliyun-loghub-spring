@@ -7,6 +7,7 @@ import com.github.charleslzq.aliyun.loghub.producer.DefaultLogItemConversionServ
 import com.github.charleslzq.aliyun.loghub.producer.LogHubProducerTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -36,13 +37,13 @@ public class LogHubProducerConfiguration {
     private String hostName = "localhost";
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "logHubProducerConversionService")
     public ConversionService logHubProducerConversionService() {
         return new DefaultLogItemConversionService();
     }
 
     @Bean
-    public LogHubProducerTemplate logHubProducerTemplate(ConversionService conversionService) {
+    public LogHubProducerTemplate logHubProducerTemplate(@Qualifier("logHubProducerConversionService") ConversionService conversionService) {
         try {
             hostIp = InetAddress.getLocalHost().getHostAddress();
             hostName = InetAddress.getLocalHost().getHostName();

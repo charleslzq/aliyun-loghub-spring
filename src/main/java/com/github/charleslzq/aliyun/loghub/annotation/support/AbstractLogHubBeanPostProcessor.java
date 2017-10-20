@@ -8,15 +8,12 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,12 +52,10 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
                 .map(this::extractAnnotationFromField)
                 .flatMap(List::stream)
                 .forEach(this::processAnnotation);
-        Stream.of(targetClass.getDeclaredMethods())
-                .map(this::extractAnnotationFromMethod)
-                .flatMap(List::stream)
-                .forEach(this::processAnnotation);
-        Stream.of(targetClass.getDeclaredConstructors())
-                .map(this::extractAnnotationFromConstructor)
+        Stream.concat(
+                Stream.of(targetClass.getDeclaredMethods()),
+                Stream.of(targetClass.getDeclaredConstructors()))
+                .map(this::extractAnnotationFromExecutables)
                 .flatMap(List::stream)
                 .forEach(this::processAnnotation);
         return o;
@@ -74,27 +69,14 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
         }
     }
 
-    private List<T> extractAnnotationFromMethod(Method method) {
-        if (!method.isAnnotationPresent(Autowired.class)) {
+    private List<T> extractAnnotationFromExecutables(Executable executable) {
+        if (!executable.isAnnotationPresent(Autowired.class)) {
             return Collections.emptyList();
         }
-        if (method.isAnnotationPresent(annotationClass) && method.getParameterCount() == 1 && method.getParameterTypes()[0].equals(beanClass)) {
-            return Collections.singletonList(method.getAnnotation(annotationClass));
+        if (executable.isAnnotationPresent(annotationClass) && executable.getParameterCount() == 1 && executable.getParameterTypes()[0].equals(beanClass)) {
+            return Collections.singletonList(executable.getAnnotation(annotationClass));
         }
-        return Stream.of(method.getParameters())
-                .filter(parameter -> parameter.isAnnotationPresent(annotationClass) && parameter.getType().equals(beanClass))
-                .map(parameter -> parameter.getAnnotation(annotationClass))
-                .collect(Collectors.toList());
-    }
-
-    private List<T> extractAnnotationFromConstructor(Constructor constructor) {
-        if (!constructor.isAnnotationPresent(Autowired.class)) {
-            return Collections.emptyList();
-        }
-        if (constructor.isAnnotationPresent(annotationClass) && constructor.getParameterCount() == 1 && constructor.getParameterTypes()[0].equals(beanClass)) {
-            return Collections.singletonList(constructor.getDeclaredAnnotation(annotationClass));
-        }
-        return Stream.of(constructor.getParameters())
+        return Stream.of(executable.getParameters())
                 .filter(parameter -> parameter.isAnnotationPresent(annotationClass) && parameter.getType().equals(beanClass))
                 .map(parameter -> parameter.getAnnotation(annotationClass))
                 .collect(Collectors.toList());
@@ -103,28 +85,17 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
     private void processAnnotation(T annotation) {
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanClass);
         builder.addConstructorArgValue(logHubProducerTemplate);
-        String beanName = generateBeanName(annotation);
+        Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
+        String beanName = beanClass.getSimpleName() + "-" + annotationAttributes.toString();
         if (!createdBeanNames.contains(beanName)) {
             addAdditionalConstructArgs(builder, annotation);
             AutowireCandidateQualifier qualifier = new AutowireCandidateQualifier(annotationClass);
-            Stream.of(annotationClass.getDeclaredMethods())
-                    .collect(Collectors.toMap(
-                            Method::getName,
-                            method -> {
-                                try {
-                                    return method.invoke(annotation);
-                                } catch (Exception e) {
-                                    return null;
-                                }
-                            }
-                    )).forEach(qualifier::setAttribute);
+            annotationAttributes.forEach(qualifier::setAttribute);
             builder.getBeanDefinition().addQualifier(qualifier);
             defaultListableBeanFactory.registerBeanDefinition(beanName, builder.getBeanDefinition());
             createdBeanNames.add(beanName);
         }
     }
-
-    protected abstract String generateBeanName(T annotation);
 
     protected abstract void addAdditionalConstructArgs(BeanDefinitionBuilder builder, T annotation);
 }

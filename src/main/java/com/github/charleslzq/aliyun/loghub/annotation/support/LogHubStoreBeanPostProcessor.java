@@ -15,11 +15,6 @@ public class LogHubStoreBeanPostProcessor extends AbstractLogHubBeanPostProcesso
     }
 
     @Override
-    protected String generateBeanName(LogHubStore annotation) {
-        return "loghubProject-" + annotation.project() + "-store-" + annotation.store();
-    }
-
-    @Override
     protected void addAdditionalConstructArgs(BeanDefinitionBuilder builder, LogHubStore annotation) {
         builder.addConstructorArgValue(annotation.project())
                 .addConstructorArgValue(annotation.store());

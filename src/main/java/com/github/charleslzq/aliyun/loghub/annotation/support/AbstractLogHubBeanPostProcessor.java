@@ -73,22 +73,22 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
         if (!executable.isAnnotationPresent(Autowired.class)) {
             return Collections.emptyList();
         }
-        if (executable.isAnnotationPresent(annotationClass) && executable.getParameterCount() == 1 && executable.getParameterTypes()[0].equals(beanClass)) {
+        if (executable.isAnnotationPresent(annotationClass)) {
             return Collections.singletonList(executable.getAnnotation(annotationClass));
         }
         return Stream.of(executable.getParameters())
-                .filter(parameter -> parameter.isAnnotationPresent(annotationClass) && parameter.getType().equals(beanClass))
+                .filter(parameter -> parameter.isAnnotationPresent(annotationClass))
                 .map(parameter -> parameter.getAnnotation(annotationClass))
                 .collect(Collectors.toList());
     }
 
     private void processAnnotation(T annotation) {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanClass);
-        builder.addConstructorArgValue(logHubProducerTemplate);
         Map<String, Object> annotationAttributes = AnnotationUtils.getAnnotationAttributes(annotation);
         String beanName = beanClass.getSimpleName() + "-" + annotationAttributes.toString();
         if (!createdBeanNames.contains(beanName)) {
-            addAdditionalConstructArgs(builder, annotation);
+            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanClass);
+            builder.addConstructorArgValue(logHubProducerTemplate);
+            annotationAttributes.values().forEach(builder::addConstructorArgValue);
             AutowireCandidateQualifier qualifier = new AutowireCandidateQualifier(annotationClass);
             annotationAttributes.forEach(qualifier::setAttribute);
             builder.getBeanDefinition().addQualifier(qualifier);
@@ -96,6 +96,4 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
             createdBeanNames.add(beanName);
         }
     }
-
-    protected abstract void addAdditionalConstructArgs(BeanDefinitionBuilder builder, T annotation);
 }

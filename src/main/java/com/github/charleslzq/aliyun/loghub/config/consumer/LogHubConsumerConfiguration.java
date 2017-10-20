@@ -28,7 +28,7 @@ public class LogHubConsumerConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "clientWorkerExecutor")
-    public AsyncTaskExecutor clientWorkExecutor() {
+    public AsyncTaskExecutor clientWorkerExecutor() {
         return new SimpleAsyncTaskExecutor();
     }
 

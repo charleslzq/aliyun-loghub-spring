@@ -4,6 +4,7 @@ import com.aliyun.openservices.log.producer.LogProducer;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubProjectBeanPostProcessor;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubStoreBeanPostProcessor;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubTopicBeanPostProcessor;
+import com.github.charleslzq.aliyun.loghub.config.LogHubAccountConfig;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectConfig;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectProperties;
 import com.github.charleslzq.aliyun.loghub.producer.DefaultLogItemConversionService;
@@ -58,13 +59,13 @@ public class LogHubProducerConfiguration {
             log.error("Error when accessing host ip and name", e);
         }
         String source = logHubProducerProperties.getSource() == SourceType.HOST_IP ? hostIp : hostName;
-        List<String> availableProjects = logHubProjectProperties.getProjects().stream()
+        List<String> availableProjects = logHubProjectProperties.getAccounts().stream()
+                .map(LogHubAccountConfig::getProjects)
+                .flatMap(List::stream)
                 .map(LogHubProjectConfig::getProject)
                 .collect(Collectors.toList());
         LogProducer logProducer = new LogProducer(logHubProducerProperties.generateProducerConfig());
-        logHubProjectProperties.getProjects().forEach(
-                logHubProjectConfig -> logProducer.setProjectConfig(logHubProjectConfig.generateProjectConfig())
-        );
+        logHubProjectProperties.generateProjectConfig().forEach(logProducer::setProjectConfig);
 
         return new LogHubProducerTemplate(logProducer, source, conversionService, availableProjects);
     }

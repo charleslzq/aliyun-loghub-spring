@@ -3,13 +3,10 @@ package com.github.charleslzq.aliyun.loghub.annotation.support;
 import com.github.charleslzq.aliyun.loghub.annotation.LogHubTopic;
 import com.github.charleslzq.aliyun.loghub.producer.LogHubProducerTemplate;
 import com.github.charleslzq.aliyun.loghub.producer.LogHubTopicTemplate;
-import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
-import java.lang.reflect.Field;
-
-public class LogHubTopicBeanPostProcessor extends AbstractLogHubBeanPostProcessor {
+public class LogHubTopicBeanPostProcessor extends AbstractLogHubBeanPostProcessor<LogHubTopic> {
     public LogHubTopicBeanPostProcessor(
             LogHubProducerTemplate logHubProducerTemplate,
             DefaultListableBeanFactory defaultListableBeanFactory) {
@@ -17,25 +14,14 @@ public class LogHubTopicBeanPostProcessor extends AbstractLogHubBeanPostProcesso
     }
 
     @Override
-    protected void process(Field field) {
-        LogHubTopic logHubTopic = field.getAnnotation(LogHubTopic.class);
-        String project = logHubTopic.project();
-        String store = logHubTopic.store();
-        String topic = logHubTopic.topic();
-        String beanName = "loghubProject-" + project + "-store-" + store + "-topic-" + topic;
-        if (!createdBeanNames.contains(beanName)) {
-            BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(LogHubTopicTemplate.class);
-            builder.addConstructorArgValue(logHubProducerTemplate)
-                    .addConstructorArgValue(project)
-                    .addConstructorArgValue(store)
-                    .addConstructorArgValue(topic);
-            AutowireCandidateQualifier qualifier = new AutowireCandidateQualifier(LogHubTopic.class);
-            builder.getBeanDefinition().addQualifier(qualifier);
-            builder.getBeanDefinition().getQualifier(qualifier.getTypeName()).setAttribute("project", project);
-            builder.getBeanDefinition().getQualifier(qualifier.getTypeName()).setAttribute("store", store);
-            builder.getBeanDefinition().getQualifier(qualifier.getTypeName()).setAttribute("topic", topic);
-            defaultListableBeanFactory.registerBeanDefinition(beanName, builder.getBeanDefinition());
-            createdBeanNames.add(beanName);
-        }
+    protected String generateBeanName(LogHubTopic annotation) {
+        return "loghubProject-" + annotation.project() + "-store-" + annotation.store() + "-topic-" + annotation.topic();
+    }
+
+    @Override
+    protected void addAdditionalConstructArgs(BeanDefinitionBuilder builder, LogHubTopic annotation) {
+        builder.addConstructorArgValue(annotation.project())
+                .addConstructorArgValue(annotation.store())
+                .addConstructorArgValue(annotation.topic());
     }
 }

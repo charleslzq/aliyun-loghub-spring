@@ -49,7 +49,7 @@ public abstract class AbstractLogHubBeanPostProcessor implements BeanPostProcess
         return o;
     }
 
-    protected boolean filterField(Field field) {
+    private boolean filterField(Field field) {
         return field.isAnnotationPresent(annotationClass) && field.getType().equals(fieldClass);
     };
 

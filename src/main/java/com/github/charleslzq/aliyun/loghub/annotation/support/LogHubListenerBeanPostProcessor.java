@@ -16,6 +16,8 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.task.AsyncTaskExecutor;
 
 import java.lang.reflect.Method;
@@ -27,7 +29,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Slf4j
-public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, InitializingBean {
+public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, InitializingBean, ApplicationListener<ApplicationReadyEvent> {
 
     private final AsyncTaskExecutor taskExecutor;
 
@@ -98,5 +100,10 @@ public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, Initi
                 log.warn("Project {} not configured", consumerConfig.getProject());
             }
         });
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        containerMap.values().forEach(ClientWorkerContainer::start);
     }
 }

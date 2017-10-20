@@ -1,6 +1,7 @@
 package com.github.charleslzq.aliyun.loghub.annotation.support;
 
 import com.github.charleslzq.aliyun.loghub.producer.LogHubProducerTemplate;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -41,7 +42,8 @@ public abstract class AbstractLogHubBeanPostProcessor implements BeanPostProcess
 
     @Override
     public Object postProcessAfterInitialization(Object o, String s) throws BeansException {
-        Stream.of(o.getClass().getDeclaredFields())
+        Class targetClass = AopUtils.isAopProxy(o) ? AopUtils.getTargetClass(o) : o.getClass();
+        Stream.of(targetClass.getDeclaredFields())
                 .filter(this::filterField)
                 .forEach(this::process);
         return o;

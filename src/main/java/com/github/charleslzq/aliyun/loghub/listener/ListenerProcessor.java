@@ -4,10 +4,12 @@ import com.aliyun.openservices.log.common.LogGroupData;
 import com.aliyun.openservices.loghub.client.ILogHubCheckPointTracker;
 import com.aliyun.openservices.loghub.client.exceptions.LogHubCheckPointException;
 import com.aliyun.openservices.loghub.client.interfaces.ILogHubProcessor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.function.Consumer;
 
+@Slf4j
 class ListenerProcessor implements ILogHubProcessor {
     private final Consumer<List<LogGroupData>> logConsumer;
     private int shardId;
@@ -36,14 +38,14 @@ class ListenerProcessor implements ILogHubProcessor {
             try {
                 iLogHubCheckPointTracker.saveCheckPoint(true);
             } catch (LogHubCheckPointException e) {
-                e.printStackTrace();
+                log.error("Error when saving check point with shardId " +  shardId, e);
             }
             lastCheckTime = curTime;
         } else {
             try {
                 iLogHubCheckPointTracker.saveCheckPoint(false);
             } catch (LogHubCheckPointException e) {
-                e.printStackTrace();
+                log.error("Error when saving check point with shardId " +  shardId, e);
             }
         }
 
@@ -55,7 +57,7 @@ class ListenerProcessor implements ILogHubProcessor {
         try {
             iLogHubCheckPointTracker.saveCheckPoint(true);
         } catch (LogHubCheckPointException e) {
-            e.printStackTrace();
+            log.error("Error when shuting down listner with shardId " +  shardId, e);
         }
     }
 }

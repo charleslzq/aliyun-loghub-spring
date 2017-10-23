@@ -20,6 +20,7 @@ public class LogHubProjectProperties {
 
     /**
      * generate project configs for all accounts
+     *
      * @return
      */
     public List<ProjectConfig> generateProjectConfig() {

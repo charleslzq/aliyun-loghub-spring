@@ -9,16 +9,22 @@ import com.github.charleslzq.aliyun.loghub.config.LogHubProjectConfig;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectProperties;
 import com.github.charleslzq.aliyun.loghub.config.consumer.LogHubConsumerProperties;
 import com.github.charleslzq.aliyun.loghub.listener.ClientWorkerContainer;
+import com.github.charleslzq.aliyun.loghub.listener.MethodLogHubListenerEndpoint;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -29,22 +35,27 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Slf4j
-public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, InitializingBean, ApplicationListener<ApplicationReadyEvent> {
-
+public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, InitializingBean, ApplicationListener<ApplicationReadyEvent> {
     private final AsyncTaskExecutor taskExecutor;
-
     private final LogHubProjectProperties logHubProjectProperties;
-
     private final LogHubConsumerProperties logHubConsumerProperties;
-
     private final Map<String, ClientWorkerContainer> containerMap = new ConcurrentHashMap<>();
-
     private final Multimap<String, Consumer<List<LogGroupData>>> listeners = ArrayListMultimap.create();
+    private final MessageHandlerMethodFactory messageHandlerMethodFactory;
+    private final ConversionService conversionService;
+    @Setter
+    private BeanFactory beanFactory;
 
-    public LogHubListenerBeanPostProcessor(AsyncTaskExecutor taskExecutor, LogHubProjectProperties logHubProjectProperties, LogHubConsumerProperties logHubConsumerProperties) {
+    public LogHubListenerBeanPostProcessor(
+            AsyncTaskExecutor taskExecutor,
+            LogHubProjectProperties logHubProjectProperties,
+            LogHubConsumerProperties logHubConsumerProperties,
+            MessageHandlerMethodFactory messageHandlerMethodFactory, ConversionService conversionService) {
         this.taskExecutor = taskExecutor;
         this.logHubProjectProperties = logHubProjectProperties;
         this.logHubConsumerProperties = logHubConsumerProperties;
+        this.messageHandlerMethodFactory = messageHandlerMethodFactory;
+        this.conversionService = conversionService;
     }
 
     @Override
@@ -65,7 +76,13 @@ public class LogHubListenerBeanPostProcessor implements BeanPostProcessor, Initi
     }
 
     private void process(LogHubListener logHubListener, Method method, Object bean) {
-
+        MethodLogHubListenerEndpoint endpoint = new MethodLogHubListenerEndpoint(
+                bean,
+                method,
+                logHubListener,
+                messageHandlerMethodFactory,
+                conversionService);
+        listeners.put(logHubListener.configName(), endpoint.getLogGroupListener(beanFactory));
     }
 
     @Override

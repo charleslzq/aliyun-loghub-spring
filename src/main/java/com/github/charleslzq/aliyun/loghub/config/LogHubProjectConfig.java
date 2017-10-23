@@ -1,6 +1,5 @@
 package com.github.charleslzq.aliyun.loghub.config;
 
-import com.aliyun.openservices.log.producer.ProjectConfig;
 import lombok.Data;
 
 /**

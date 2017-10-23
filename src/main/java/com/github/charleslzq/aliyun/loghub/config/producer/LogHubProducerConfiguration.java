@@ -34,14 +34,11 @@ import java.util.stream.Collectors;
 public class LogHubProducerConfiguration {
 
     @Autowired
+    protected DefaultListableBeanFactory defaultListableBeanFactory;
+    @Autowired
     private LogHubProducerProperties logHubProducerProperties;
-
     @Autowired
     private LogHubProjectProperties logHubProjectProperties;
-
-    @Autowired
-    protected DefaultListableBeanFactory defaultListableBeanFactory;
-
     private String hostIp = "127.0.0.1";
     private String hostName = "localhost";
 

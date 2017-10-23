@@ -29,7 +29,7 @@ class ListenerProcessor implements ILogHubProcessor {
         try {
             logConsumer.accept(logs);
         } catch (Exception e) {
-            log.error("Error when fetching logs with shardId " +  shardId, e);
+            log.error("Error when fetching logs with shardId " + shardId, e);
             return iLogHubCheckPointTracker.getCheckPoint();
         }
 
@@ -38,14 +38,14 @@ class ListenerProcessor implements ILogHubProcessor {
             try {
                 iLogHubCheckPointTracker.saveCheckPoint(true);
             } catch (LogHubCheckPointException e) {
-                log.error("Error when saving check point with shardId " +  shardId, e);
+                log.error("Error when saving check point with shardId " + shardId, e);
             }
             lastCheckTime = curTime;
         } else {
             try {
                 iLogHubCheckPointTracker.saveCheckPoint(false);
             } catch (LogHubCheckPointException e) {
-                log.error("Error when saving check point with shardId " +  shardId, e);
+                log.error("Error when saving check point with shardId " + shardId, e);
             }
         }
 
@@ -57,7 +57,7 @@ class ListenerProcessor implements ILogHubProcessor {
         try {
             iLogHubCheckPointTracker.saveCheckPoint(true);
         } catch (LogHubCheckPointException e) {
-            log.error("Error when shut down listener with shardId " +  shardId, e);
+            log.error("Error when shut down listener with shardId " + shardId, e);
         }
     }
 }

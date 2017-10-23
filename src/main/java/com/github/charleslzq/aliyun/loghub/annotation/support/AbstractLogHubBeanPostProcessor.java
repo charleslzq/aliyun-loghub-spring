@@ -87,8 +87,7 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
         String beanName = beanClass.getSimpleName() + "-" + annotationAttributes.toString();
         if (!createdBeanNames.contains(beanName)) {
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(beanClass);
-            builder.addConstructorArgValue(logHubProducerTemplate);
-            annotationAttributes.values().forEach(builder::addConstructorArgValue);
+            addConstructorArgValues(builder, logHubProducerTemplate, annotation);
             AutowireCandidateQualifier qualifier = new AutowireCandidateQualifier(annotationClass);
             annotationAttributes.forEach(qualifier::setAttribute);
             builder.getBeanDefinition().addQualifier(qualifier);
@@ -96,4 +95,6 @@ public abstract class AbstractLogHubBeanPostProcessor<T extends Annotation> impl
             createdBeanNames.add(beanName);
         }
     }
+
+    protected abstract void addConstructorArgValues(BeanDefinitionBuilder builder, LogHubProducerTemplate logHubProducerTemplate, T annotation);
 }

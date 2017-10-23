@@ -1,4 +1,4 @@
-package com.github.charleslzq.aliyun.loghub.producer.destination;
+package com.github.charleslzq.aliyun.loghub.producer;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

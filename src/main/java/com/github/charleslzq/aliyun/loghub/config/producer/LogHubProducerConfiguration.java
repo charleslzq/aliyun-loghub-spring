@@ -10,9 +10,6 @@ import com.github.charleslzq.aliyun.loghub.config.LogHubProjectProperties;
 import com.github.charleslzq.aliyun.loghub.producer.DefaultLogItemConversionService;
 import com.github.charleslzq.aliyun.loghub.producer.LogHubMessageSendingTemplate;
 import com.github.charleslzq.aliyun.loghub.producer.LogHubProducerTemplate;
-import com.github.charleslzq.aliyun.loghub.producer.destination.DefaultDestinationResolver;
-import com.github.charleslzq.aliyun.loghub.producer.destination.DestinationResolver;
-import com.github.charleslzq.aliyun.loghub.producer.destination.LogHubDestination;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -75,17 +72,10 @@ public class LogHubProducerConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public DestinationResolver<LogHubDestination> logHubDestinationResolver() {
-        return new DefaultDestinationResolver();
-    }
-
-    @Bean
     public LogHubMessageSendingTemplate logHubMessageSendingTemplate(
-            LogHubProducerTemplate logHubProducerTemplate,
-            DestinationResolver<LogHubDestination> logHubDestinationResolver
+            LogHubProducerTemplate logHubProducerTemplate
     ) {
-        return new LogHubMessageSendingTemplate(logHubProducerTemplate, logHubDestinationResolver);
+        return new LogHubMessageSendingTemplate(logHubProducerTemplate);
     }
 
     @Bean

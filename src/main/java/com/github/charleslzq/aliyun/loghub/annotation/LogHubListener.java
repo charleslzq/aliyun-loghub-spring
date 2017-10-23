@@ -1,7 +1,6 @@
 package com.github.charleslzq.aliyun.loghub.annotation;
 
 import com.aliyun.openservices.log.common.Logs;
-import com.github.charleslzq.aliyun.loghub.listener.filter.LogGroupFilter;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 
 import java.lang.annotation.*;

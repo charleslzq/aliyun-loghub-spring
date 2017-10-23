@@ -3,7 +3,8 @@ package com.github.charleslzq.aliyun.loghub.listener;
 import com.aliyun.openservices.log.common.LogGroupData;
 import com.aliyun.openservices.log.common.Logs;
 import com.github.charleslzq.aliyun.loghub.annotation.LogHubListener;
-import com.github.charleslzq.aliyun.loghub.listener.filter.*;
+import com.github.charleslzq.aliyun.loghub.listener.filter.LogFilter;
+import com.github.charleslzq.aliyun.loghub.listener.filter.LogGroupFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.convert.ConversionService;
@@ -57,7 +58,7 @@ public class MethodLogHubListenerEndpoint {
         String[] topics = annotation.topics();
         List<LogGroupFilter> filters = new ArrayList<>();
         if (topics.length > 0) {
-            filters.add(new TopicsFilter(topics));
+            filters.add(new LogGroupFilter.Topics(topics));
         }
         if (beanNames.length > 0) {
             filters.addAll(
@@ -68,9 +69,9 @@ public class MethodLogHubListenerEndpoint {
         }
 
         if (filters.size() == 0) {
-            return new AcceptAllLogGroupFilter();
+            return new LogGroupFilter.AcceptAll();
         } else {
-            return new CompositeGroupFilter(filters);
+            return new LogGroupFilter.Composite(filters);
         }
 
     }
@@ -78,9 +79,9 @@ public class MethodLogHubListenerEndpoint {
     private LogFilter composeLogFilter(BeanFactory beanFactory) {
         String[] beanNames = annotation.logFilterBeanNames();
         if (beanNames.length == 0) {
-            return new AcceptAllLogFilter();
+            return new LogFilter.AcceptAll();
         } else {
-            return new CompositeLogFilter(
+            return new LogFilter.Composite(
                     Stream.of(beanNames)
                             .map(beanName -> beanFactory.getBean(beanName, LogFilter.class))
                             .collect(Collectors.toList())

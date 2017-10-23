@@ -57,7 +57,7 @@ class ListenerProcessor implements ILogHubProcessor {
         try {
             iLogHubCheckPointTracker.saveCheckPoint(true);
         } catch (LogHubCheckPointException e) {
-            log.error("Error when shuting down listner with shardId " +  shardId, e);
+            log.error("Error when shut down listener with shardId " +  shardId, e);
         }
     }
 }

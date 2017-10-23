@@ -29,7 +29,7 @@ class ListenerProcessor implements ILogHubProcessor {
         try {
             logConsumer.accept(logs);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error when fetching logs with shardId " +  shardId, e);
             return iLogHubCheckPointTracker.getCheckPoint();
         }
 

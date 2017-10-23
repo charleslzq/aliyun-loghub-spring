@@ -23,7 +23,7 @@ public class LogHubMessageSendingTemplate extends AbstractMessageSendingTemplate
                 logHubDestination.getProject(),
                 logHubDestination.getStore(),
                 logHubDestination.getTopic(),
-                Collections.singletonList(message.getPayload())
+                Collections.singletonList(message)
         );
     }
 }

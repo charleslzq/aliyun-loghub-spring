@@ -20,5 +20,5 @@ public @interface LogHubTopic {
 
     String store();
 
-    String topic();
+    String topic() default "";
 }

@@ -19,5 +19,5 @@ public class LogHubProducerProperties {
     /**
      * aliyun loghub producer configuration
      */
-    private ProducerConfig config;
+    private ProducerConfig config = new ProducerConfig();
 }

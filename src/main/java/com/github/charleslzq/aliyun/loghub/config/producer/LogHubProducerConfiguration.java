@@ -62,7 +62,7 @@ public class LogHubProducerConfiguration {
                 .flatMap(List::stream)
                 .map(LogHubProjectConfig::getProject)
                 .collect(Collectors.toList());
-        LogProducer logProducer = new LogProducer(logHubProducerProperties.getConfig());
+        LogProducer logProducer = new LogProducer(logHubProducerProperties.generateProducerConfig());
         logHubProjectProperties.generateProjectConfig().forEach(logProducer::setProjectConfig);
 
         return new LogHubProducerTemplate(logProducer, source, conversionService, availableProjects);

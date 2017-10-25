@@ -23,35 +23,32 @@ public class LogHubProducerTemplate implements DisposableBean {
      */
     private final ConversionService conversionService;
     /**
-     * available loghub projects
+     * if true, send logs immediately when invoke send method
      */
-    private final List<String> availableProjects;
+    private final boolean flushImmediately;
 
 
-    public LogHubProducerTemplate(LogProducer logProducer, String source, ConversionService conversionService, List<String> availableProjects) {
+    public LogHubProducerTemplate(LogProducer logProducer, String source, ConversionService conversionService, boolean flushImmediately) {
         this.logProducer = logProducer;
         this.source = source;
         this.conversionService = conversionService;
-        this.availableProjects = availableProjects;
+        this.flushImmediately = flushImmediately;
     }
 
     public void send(String project, String store, String topic, List<?> items, ILogCallback callback) {
-        if (availableProjects.contains(project)) {
-            logProducer.send(project, store, topic, source,
-                    items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()),
-                    callback);
-        } else {
-            throw new IllegalArgumentException("Project " + project + " not configured");
+        logProducer.send(project, store, topic, source,
+                items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()),
+                callback);
+        if (flushImmediately) {
+            logProducer.flush();
         }
     }
 
     public void send(String project, String store, String topic, List<?> items) {
-        if (availableProjects.contains(project)) {
-            logProducer.send(project, store, topic, source,
-                    items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()));
+        logProducer.send(project, store, topic, source,
+                items.stream().map(item -> conversionService.convert(item, LogItem.class)).collect(Collectors.toList()));
+        if (flushImmediately) {
             logProducer.flush();
-        } else {
-            throw new IllegalArgumentException("Project " + project + " not configured");
         }
     }
 

@@ -4,8 +4,6 @@ import com.aliyun.openservices.log.producer.LogProducer;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubProjectBeanPostProcessor;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubStoreBeanPostProcessor;
 import com.github.charleslzq.aliyun.loghub.annotation.support.LogHubTopicBeanPostProcessor;
-import com.github.charleslzq.aliyun.loghub.config.LogHubAccountConfig;
-import com.github.charleslzq.aliyun.loghub.config.LogHubProjectConfig;
 import com.github.charleslzq.aliyun.loghub.config.LogHubProjectProperties;
 import com.github.charleslzq.aliyun.loghub.producer.DefaultLogItemConversionService;
 import com.github.charleslzq.aliyun.loghub.producer.LogHubMessageSendingTemplate;
@@ -22,8 +20,6 @@ import org.springframework.core.convert.ConversionService;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -57,15 +53,10 @@ public class LogHubProducerConfiguration {
             log.error("Error when accessing host ip and name", e);
         }
         String source = logHubProducerProperties.getSource() == SourceType.HOST_IP ? hostIp : hostName;
-        List<String> availableProjects = logHubProjectProperties.getAccounts().stream()
-                .map(LogHubAccountConfig::getProjects)
-                .flatMap(List::stream)
-                .map(LogHubProjectConfig::getProject)
-                .collect(Collectors.toList());
         LogProducer logProducer = new LogProducer(logHubProducerProperties.generateProducerConfig());
         logHubProjectProperties.generateProjectConfig().forEach(logProducer::setProjectConfig);
 
-        return new LogHubProducerTemplate(logProducer, source, conversionService, availableProjects);
+        return new LogHubProducerTemplate(logProducer, source, conversionService, logHubProducerProperties.isFlushImmediately());
     }
 
     @Bean

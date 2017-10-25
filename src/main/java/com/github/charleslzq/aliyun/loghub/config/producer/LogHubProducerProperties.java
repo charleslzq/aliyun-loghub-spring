@@ -41,6 +41,10 @@ public class LogHubProducerProperties {
      */
     private int retry = 3;
     /**
+     * whether to send logs immediately or not
+     */
+    private boolean flushImmediately = true;
+    /**
      * specify ip or host name as source field of loghub message
      */
     private SourceType source = SourceType.HOST_IP;
